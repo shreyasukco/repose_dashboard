@@ -1,12 +1,10 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
-import numpy as np
-from streamlit_dynamic_filters import DynamicFilters
 import plotly.express as px
+import folium
 from geopy.distance import geodesic
-import folium 
-from streamlit_folium import st_folium 
-from scipy.spatial.distance import cdist 
+from streamlit_folium import st_folium
+from scipy.spatial.distance import cdist
 
 # Streamlit config
 st.set_page_config(
@@ -15,6 +13,7 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 st.markdown("##### Repose Route Optimization Dashboard")
+
 # Read and clean data
 @st.cache_data
 def load_data():
@@ -28,6 +27,7 @@ def load_data():
 dff = load_data()
 
 # Filters
+from streamlit_dynamic_filters import DynamicFilters
 dynamic_filters = DynamicFilters(dff, filters=["state1", "name of bo", "route"])    
 dynamic_filters.display_filters(location='sidebar')
 df = dynamic_filters.filter_df()
@@ -68,9 +68,11 @@ fig.update_layout(
 st.markdown("##### Geo Location Overview")
 st.markdown("""
 ##### ℹ️ Notes:
-1. **If multiple states are selected**, color is based on **state**. 2. **If single state is selected**, color is based on **BO**. 3. **If single BO is selected**, color is based on **route**.
+1. **If multiple states are selected**, color is based on **state**.
+2. **If single state is selected**, color is based on **BO**.
+3. **If single BO is selected**, color is based on **route**.
 """)
-# st.markdown("##### Geo Location Overview")
+
 st.plotly_chart(fig, use_container_width=True)
 
 # State-wise overview
@@ -93,15 +95,7 @@ def get_bo_summary(df):
             point1 = (group_df.iloc[i-1]['latitude'], group_df.iloc[i-1]['longitude'])
             point2 = (group_df.iloc[i]['latitude'], group_df.iloc[i]['longitude'])
             total += geodesic(point1, point2).km
-            # if 50 < total < 100:  # Correct logical condition for total between 50 and 100
-            #     total += 25
-            # elif total == 0:  # If no distance is calculated, add a base value
-            #     total += 10
-            # elif total > 100:  # If distance exceeds 100, apply a larger adjustment
-            #     total += 35 
-            # else:
-            #     continue         
-        return round(total+10)
+        return round(total + 10)
 
     summary = df.groupby(['name of bo', 'state1', 'route']).agg(
         number_of_dealers=('name of dealer', 'nunique')
